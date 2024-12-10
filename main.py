@@ -1,5 +1,7 @@
+from flask import Flask
 import telebot
 from telebot import types
+from threading import Thread
 
 # Ваш токен
 bot = telebot.TeleBot('8087901925:AAH2cQ1f3O_dyL-uFCyDYz20PYkC6KsXt_o')
@@ -9,6 +11,13 @@ ADMIN_USERNAME = '@vVv_075'
 
 # Словарь для хранения ID сообщений, которые нужно удалить
 sent_messages = {}
+
+# Создаем Flask-приложение
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return "Bot is running!"  # Простой endpoint для проверки состояния
 
 # Команда /start
 @bot.message_handler(commands=['start'])
@@ -177,8 +186,15 @@ def handle_contact(message):
     except Exception as e:
         print(f"Ошибка в handle_contact: {e}")
 
-# Запуск бота
-try:
+# Функция для запуска бота в фоновом режиме
+def run_bot():
     bot.polling(non_stop=True)
-except Exception as e:
-    print(f"Ошибка запуска бота: {e}")
+
+# Запуск бота в отдельном потоке
+if __name__ == '__main__':
+    # Запускаем Telegram-бота в отдельном потоке
+    t = Thread(target=run_bot)
+    t.start()
+
+    # Запуск Flask-приложения
+    app.run(host='0.0.0.0', port=5000)
